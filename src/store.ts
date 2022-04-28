@@ -1,10 +1,11 @@
-import type { Models } from 'appwrite';
+import { Models, Query } from 'appwrite';
 import { get, writable } from "svelte/store";
 import { sdk, server } from "./appwrite";
 
 export type Todo = {
   content: string;
   isComplete: boolean;
+  user: string;
 } & Models.Document;
 
 export type Alert = {
@@ -18,7 +19,10 @@ const createTodos = () => {
   return {
     subscribe,
     fetch: async () => {
-      const response: any = await sdk.database.listDocuments(server.collection);
+      const response: any = await sdk.database.listDocuments(server.collection,[
+        Query.equal('key',`${get(state).account.$id}`)
+      ]);
+      // console.log("eta: "+`${get(state).account.email}`);
       return set(response.documents);
     },
     addTodo: async (content: string) => {
@@ -29,6 +33,7 @@ const createTodos = () => {
         {
           content,
           isComplete: false,
+          key:`${get(state).account.$id}`,
         },
         permissions,
         permissions
